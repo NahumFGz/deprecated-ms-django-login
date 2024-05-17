@@ -7,6 +7,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     password_reset_token = models.CharField(max_length=255, null=True, blank=True)
     password_reset_sent_at = models.DateTimeField(null=True, blank=True)
+    session_version = models.IntegerField(default=0)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
