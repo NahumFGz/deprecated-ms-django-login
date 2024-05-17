@@ -6,6 +6,10 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 
 from users.models import User
 
@@ -97,6 +101,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         if user.password_reset_token != token:
             raise serializers.ValidationError("Invalid token")
+
+        # Invalidar los tokens anteriores añadiéndolos a la lista negra
+        outstanding_tokens = OutstandingToken.objects.filter(user=user)
+        for outstanding_token in outstanding_tokens:
+            if not BlacklistedToken.objects.filter(token=outstanding_token).exists():
+                BlacklistedToken.objects.create(token=outstanding_token)
 
         user.set_password(self.validated_data["new_password"])
         user.password_reset_token = None
