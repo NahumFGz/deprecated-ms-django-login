@@ -1,3 +1,4 @@
+from decouple import config
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -61,8 +62,11 @@ class PasswordResetSerializer(serializers.Serializer):
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         # Aquí debes configurar tu dominio correctamente
-        domain = "localhost:8000"
-        link = f"http://{domain}/api/auth/password-reset-confirm/{uid}/{token}/"
+        domain = config("HOST_DOMAIN")
+        http_protocol = config("HTTP_HTTPS_PROTOCOL")
+        link = (
+            f"{http_protocol}://{domain}/api/auth/password-reset-confirm/{uid}/{token}/"
+        )
         send_mail(
             "Password Reset",
             f"Click the link to reset your password: {link}",

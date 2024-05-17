@@ -43,3 +43,12 @@ REST_FRAMEWORK = {
 
 # Otra libreria de documentacion 
 https://drf-yasg.readthedocs.io/en/stable/readme.html?highlight=usage#usage
+
+
+# .env config
+EMAIL_HOST=
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+EMAIL_PORT=
+HTTP_HTTPS_PROTOCOL=
+HOST_DOMAIN=
