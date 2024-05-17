@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_yasg",
     "corsheaders",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -147,3 +148,6 @@ SWAGGER_SETTINGS = {
     "JSON_EDITOR": True,
     "api_key": "",
 }
+
+# Configuración extendida de usuarios
+AUTH_USER_MODEL = "users.User"
