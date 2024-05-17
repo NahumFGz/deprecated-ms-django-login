@@ -20,4 +20,9 @@ urlpatterns = [
         views.PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
+    path(
+        "auth/blacklist-all-tokens/",
+        views.BlacklistAllTokensView.as_view(),
+        name="blacklist_all_tokens",
+    ),
 ]

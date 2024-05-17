@@ -3,6 +3,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 
 from users.api.serializers import (
     PasswordResetConfirmSerializer,
@@ -49,4 +53,21 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         return Response(
             {"detail": "Password has been reset successfully."},
             status=status.HTTP_200_OK,
+        )
+
+
+class BlacklistAllTokensView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        outstanding_tokens = OutstandingToken.objects.filter(user=user)
+        for outstanding_token in outstanding_tokens:
+            print(outstanding_token)
+            try:
+                BlacklistedToken.objects.get(token=outstanding_token)
+            except BlacklistedToken.DoesNotExist:
+                BlacklistedToken.objects.create(token=outstanding_token)
+        return Response(
+            {"detail": "All tokens have been blacklisted."}, status=status.HTTP_200_OK
         )
