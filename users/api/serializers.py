@@ -2,6 +2,7 @@ from decouple import config
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
@@ -60,13 +61,17 @@ class PasswordResetSerializer(serializers.Serializer):
         email = self.validated_data["email"]
         user = User.objects.get(email=email)
         token = default_token_generator.make_token(user)
+        user.password_reset_token = token
+        user.password_reset_sent_at = timezone.now()
+        user.save()
+
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        # Aquí debes configurar tu dominio correctamente
         domain = config("HOST_DOMAIN")
         http_protocol = config("HTTP_HTTPS_PROTOCOL")
         link = (
             f"{http_protocol}://{domain}/api/auth/password-reset-confirm/{uid}/{token}/"
         )
+
         send_mail(
             "Password Reset",
             f"Click the link to reset your password: {link}",
@@ -90,9 +95,11 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError("Invalid UID")
 
-        if not default_token_generator.check_token(user, token):
+        if user.password_reset_token != token:
             raise serializers.ValidationError("Invalid token")
 
         user.set_password(self.validated_data["new_password"])
+        user.password_reset_token = None
+        user.password_reset_sent_at = None
         user.save()
         return user
